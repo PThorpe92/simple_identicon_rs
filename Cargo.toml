@@ -1,0 +1,16 @@
+[package]
+name = "rustimg"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+hyper = "0.14.26"
+image = "0.24.6"
+lazy_static = "1.4.0"
+palette = "0.7.2"
+rand = "0.8.5"
+[dependencies.xxhash-rust]
+version = "0.8.6"
+features = ["xxh3", "const_xxh3"]
