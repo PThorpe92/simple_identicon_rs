@@ -9,6 +9,8 @@ An Identicon is a recognizable visual pattern that is generated based on the inp
 - Generates Identicons based on input data.
 - Produces Identicons as PNG images.
 - Customizable parameters for image size and block size.
+<img src="https://github.com/PThorpe92/simple_identicon_rs/blob/main/examples/PrestonThorpe.png?raw=true" width="420" alt="alt text">
+<img src="https://github.com/PThorpe92/simple_identicon_rs/blob/main/examples/preston.png?raw=true" width="420" alt="alt text">
 
 ## Usage in code
 ```
