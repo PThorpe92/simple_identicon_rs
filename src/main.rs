@@ -61,24 +61,27 @@ fn identicon(data: &[u8]) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
     let mut ci = 0;
     for i in 0..(columns_count * (columns_count + 1) / 2) {
         if filled || (digest >> (i % 64)) & 1 == 1 {
-            for i in 0..block_length {
+            for j in 0..block_length {
                 let x = padding + ri * block_length;
-                let y = padding + ci * block_length + i;
-                let offset = img.get_pixel_mut(x, y);
-                for (channel, pixel) in offset.channels_mut().iter_mut().zip(&pixels) {
-                    *channel = *pixel;
-                }
+                let y = padding + ci * block_length + j;
+                let start_x = x - block_length / 2;
+                let start_y = y - block_length / 2;
+                let end_x = x + block_length / 2;
+                let end_y = y + block_length / 2;
 
-                let x = padding + (columns_count - 1 - ri) * block_length;
-                let offset = img.get_pixel_mut(x, y);
-                for (channel, pixel) in offset.channels_mut().iter_mut().zip(&pixels) {
-                    *channel = *pixel;
+                for px in start_x..=end_x {
+                    for py in start_y..=end_y {
+                        let offset = img.get_pixel_mut(px, py);
+                        for (channel, pixel) in offset.channels_mut().iter_mut().zip(&pixels) {
+                            *channel = *pixel;
+                        }
+                    }
                 }
             }
         }
 
         ci += 1;
-        if ci == columns_count {
+        if ci == columns_count - ri {
             ci = 0;
             ri += 1;
         }
