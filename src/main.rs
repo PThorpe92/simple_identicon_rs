@@ -1,3 +1,4 @@
+use clap::{Arg, Command};
 use image::codecs::png::PngEncoder;
 use image::{ImageBuffer, ImageEncoder, Pixel, PixelWithColorType, Rgba};
 use std::io::Read;
@@ -8,7 +9,23 @@ use std::str;
 use xxhash_rust::xxh3::xxh3_64;
 
 fn main() {
-    let listener = TcpListener::bind("127.0.0.1:6660").expect("Failed to bind");
+    let matches = Command::new("Simple Identicon")
+        .author("PThorpe92")
+        .about("Serves Identicon images on a specified port")
+        .arg(
+            Arg::new("port")
+                .short('p')
+                .long("port")
+                .value_name("PORT")
+                .help("Sets the port number")
+                .default_value("6660"),
+        )
+        .get_matches();
+
+    let port = matches.get_one::<String>("port").unwrap();
+
+    let listener = TcpListener::bind(format!("127.0.0.1:{}", port)).unwrap();
+    println!("Server started on port {}", port);
     for stream in listener.incoming() {
         let stream = stream.expect("Failed to establish connection");
         handle_connection(stream);
@@ -20,7 +37,7 @@ fn handle_connection(mut stream: TcpStream) {
     stream.read(&mut buffer).expect("Failed to read stream");
     let request = str::from_utf8(&buffer).unwrap();
 
-    let identicon = identicon(request.as_bytes());
+    let identicon = identicon(request.as_bytes(), 540, 60);
     let response = create_response(identicon);
 
     stream
@@ -29,14 +46,11 @@ fn handle_connection(mut stream: TcpStream) {
     stream.flush().expect("Failed to flush stream");
 }
 
-fn identicon(data: &[u8]) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
+fn identicon(data: &[u8], width: u32, block_length: u32) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
     let digest = xxh3_64(data);
-    let width = 540;
-    let height = 540;
-    let block_length = 60;
     let mut img = ImageBuffer::from_pixel(
         width,
-        height,
+        width,
         Rgba([
             digest as u8,
             (digest >> 8) as u8,
@@ -47,8 +61,8 @@ fn identicon(data: &[u8]) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
 
     let mut columns_count = width / block_length;
     let mut padding = block_length / 2;
-    if height % block_length != 0 {
-        padding = (height - block_length * columns_count) / 2;
+    if width % block_length != 0 {
+        padding = (width - block_length * columns_count) / 2;
     } else if columns_count > 1 {
         columns_count -= 1;
     } else {
